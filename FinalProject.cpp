@@ -34,11 +34,11 @@
 //		6. The transformations to be reset
 //		7. The program to quit
 //
-//	Author:			Joe Graphics
+//	Author:			Sarah Carricaburu
 
 // title of these windows:
 
-const char *WINDOWTITLE = "OpenGL / GLUT Sample -- Joe Graphics";
+const char *WINDOWTITLE = "OpenGL / Final Project -- Sarah Carricaburu";
 const char *GLUITITLE   = "User Interface Window";
 
 // what the glui package defines as true and false:
@@ -121,6 +121,27 @@ enum Colors
 	MAGENTA
 };
 
+
+GLuint EarthDL;
+GLuint JupiterDL;
+GLuint MarsDL;
+GLuint MercuryDL;
+GLuint NeptuneDL;
+GLuint SaturnDL;
+GLuint SunDL;
+GLuint UranusDL;
+GLuint VenusDL;
+
+GLuint EarthTex;
+GLuint MarsTex;
+GLuint MercuryTex;
+GLuint JupiterTex;
+GLuint NeptuneTex;
+GLuint SunTex;
+GLuint SaturnTex;
+GLuint UranusTex;
+GLuint VenusTex;
+
 char * ColorNames[ ] =
 {
 	(char *)"Red",
@@ -186,8 +207,10 @@ int		ShadowsOn;				// != 0 means to turn shadows on
 float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
-
-
+int 	SphereDL;
+float currentTime = 10.0f;
+const float timeStep = 0.01f;
+const int MSEC = 10000;	
 // function prototypes:
 
 void	Animate( );
@@ -220,6 +243,24 @@ float			Dot(float [3], float [3]);
 float			Unit(float [3], float [3]);
 float			Unit(float [3]);
 
+
+struct Planet {
+    float semiMajorAxis; // Orbital radius
+    float orbitalPeriod; // Orbital period
+    float scale;         // Planet size scale
+};
+
+Planet planets[] = {
+    {1.0f, 1.0f, 0.2f},      // Earth
+	{5.2f, 11.86f, 0.5f},  // Jupiter
+	{1.52f, 1.88f, 0.02f},    // Mars
+	{0.39f, 0.24f, 0.02f}, // Mercury
+	{30.05f, 164.8f, 0.18f}, // Neptune
+    {9.58f, 29.46f, 0.45f}, // Saturn
+    {19.22f, 84.01f, 0.2f}, // Uranus
+	{0.72f, 0.62f, 0.04f},  // Venus
+  
+};
 
 // utility to create an array from 3 separate values:
 
@@ -267,14 +308,15 @@ MulArray3(float factor, float a, float b, float c )
 
 //#include "setmaterial.cpp"
 //#include "setlight.cpp"
-//#include "osusphere.cpp"
+#include "osusphere.cpp"
 //#include "osucone.cpp"
 //#include "osutorus.cpp"
-//#include "bmptotexture.cpp"
+#include "bmptotexture.cpp"
 //#include "loadobjfile.cpp"
-//#include "keytime.cpp"
+#include "keytime.cpp"
 //#include "glslprogram.cpp"
-
+Keytimes EarthOrbit;
+Keytimes JupiterOrbit;
 
 // main program:
 
@@ -338,6 +380,7 @@ Animate( )
 	// force a call to Display( ) next time it is convenient:
 
 	glutSetWindow( MainWindow );
+	currentTime += timeStep;
 	glutPostRedisplay( );
 }
 
@@ -396,7 +439,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt( 0.f, 0.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+	gluLookAt(100.f,100.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 
 	// rotate the scene:
 
@@ -433,14 +476,48 @@ Display( )
 		glCallList( AxesList );
 	}
 
+
 	// since we are using glScalef( ), be sure the normals get unitized:
 
 	glEnable( GL_NORMALIZE );
 
+	glEnable( GL_TEXTURE_2D );
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 
 	// draw the box object by calling up its display list:
+	
 
-	glCallList( BoxList );
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glCallList(EarthDL);
+	
+	float nowTime = glutGet( GLUT_ELAPSED_TIME )/1000.0f;
+	glPushMatrix();
+	float angularSpeed1 = nowTime*(2.0f * M_PI)/11.86; // Angular speed
+	float x1 = 50.0f*planets[1].semiMajorAxis * cos(angularSpeed1);            // X position
+    float z1 = 50.0f* planets[1].semiMajorAxis * sin(angularSpeed1);  
+	glTranslatef(x1,0.0f,z1);
+	glCallList(JupiterDL);
+
+	glPopMatrix();
+
+
+	glCallList(MarsDL);
+	glCallList(MercuryDL);
+	glCallList(NeptuneDL);
+	glCallList(SaturnDL);
+	glCallList(UranusDL);
+	glCallList(VenusDL);
+
+
+
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glCallList(SunDL);
+	
+	
+	
+	// }
+
 
 #ifdef DEMO_Z_FIGHTING
 	if( DepthFightingOn != 0 )
@@ -783,9 +860,178 @@ InitGraphics( )
 	// but, this sets us up nicely for doing animation
 
 	glutIdleFunc( Animate );
+	
 
+	// {1.0f, 1.0f, 0.2f},      // Earth
+	// {5.2f, 11.86f, 0.5f},  // Jupiter
+	// {1.52f, 1.88f, 0.02f},    // Mars
+	// {0.39f, 0.24f, 0.02f}, // Mercury
+	// {30.05f, 164.8f, 0.18f}, // Neptune
+    // {9.58f, 29.46f, 0.45f}, // Saturn
+    // {19.22f, 84.01f, 0.2f}, // Uranus
+	// {0.72f, 0.62f, 0.04f},  // Venus
+
+	int width, height;
+	char *file = (char *)"earth.bmp";
+	unsigned char *texture = BmpToTexture( file, &width, &height );
+	if( texture == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file );
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file, width, height );
+
+	glGenTextures( 1, &EarthTex );
+	glBindTexture( GL_TEXTURE_2D, EarthTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
+
+	int width2, height2;
+	char *file2 = (char *)"jupiter.bmp";
+	unsigned char *texture2 = BmpToTexture( file2, &width2, &height2);
+	if( texture2 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file2);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file2, width2, height2);
+
+	glGenTextures( 1, &JupiterTex );
+	glBindTexture( GL_TEXTURE_2D, JupiterTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, texture2);
+
+
+	int width3, height3;
+	char *file3 = (char *)"mars.bmp";
+	unsigned char *texture3 = BmpToTexture( file3, &width3, &height3);
+	if( texture3 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file3);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file3, width3, height3);
+
+	glGenTextures( 1, &MarsTex );
+	glBindTexture( GL_TEXTURE_2D, MarsTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width3, height3, 0, GL_RGB, GL_UNSIGNED_BYTE, texture3);
+
+
+
+	
+	int width4, height4;
+	char *file4= (char *)"mercury.bmp";
+	unsigned char *texture4 = BmpToTexture( file4, &width4, &height4);
+	if( texture4 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file4);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file4, width4, height4);
+
+	glGenTextures( 1, &MercuryTex );
+	glBindTexture( GL_TEXTURE_2D, MercuryTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width4, height4, 0, GL_RGB, GL_UNSIGNED_BYTE, texture4);
+
+
+	int width5, height5;
+	char *file5= (char *)"neptune.bmp";
+	unsigned char *texture5 = BmpToTexture( file5, &width5, &height5);
+	if( texture5 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file5);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file5, width5, height5);
+
+	glGenTextures( 1, &NeptuneTex );
+	glBindTexture( GL_TEXTURE_2D, NeptuneTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width5, height5, 0, GL_RGB, GL_UNSIGNED_BYTE, texture5);
+
+	int width6, height6;
+	char *file6= (char *)"sun.bmp";
+	unsigned char *texture6 = BmpToTexture( file6, &width6, &height6);
+	if( texture6 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file6);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file6, width6, height6);
+
+	glGenTextures( 1, &SunTex );
+	glBindTexture( GL_TEXTURE_2D, SunTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width6, height6, 0, GL_RGB, GL_UNSIGNED_BYTE, texture6);
+
+
+	int width7, height7;
+	char *file7= (char *)"saturn.bmp";
+	unsigned char *texture7 = BmpToTexture( file7, &width7, &height7);
+	if( texture7 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file7);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file7, width7, height7);
+
+	glGenTextures( 1, &SaturnTex );
+	glBindTexture( GL_TEXTURE_2D, SaturnTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width7, height7, 0, GL_RGB, GL_UNSIGNED_BYTE, texture7);
+
+	int width8, height8;
+	char *file8= (char *)"uranus.bmp";
+	unsigned char *texture8 = BmpToTexture( file8, &width8, &height8);
+	if( texture8 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file8);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file8, width8, height);
+
+	glGenTextures( 1, &UranusTex );
+	glBindTexture( GL_TEXTURE_2D,UranusTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width8, height8, 0, GL_RGB, GL_UNSIGNED_BYTE, texture8);
+
+	int width9, height9;
+	char *file9= (char *)"venus.bmp";
+	unsigned char *texture9 = BmpToTexture( file9, &width9, &height9);
+	if( texture8 == NULL )
+        	fprintf( stderr, "Cannot open texture '%s'\n", file9);
+	else
+        	fprintf( stderr, "Opened '%s': width = %d ; height = %d\n", file9, width9, height);
+
+	glGenTextures( 1, &VenusTex );
+	glBindTexture( GL_TEXTURE_2D,VenusTex );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D( GL_TEXTURE_2D, 0, 3, width9, height9, 0, GL_RGB, GL_UNSIGNED_BYTE, texture9);
 	// init the glew package (a window must be open to do this):
-
+	
+	
 #ifdef WIN32
 	GLenum err = glewInit( );
 	if( err != GLEW_OK )
@@ -812,64 +1058,115 @@ InitLists( )
 {
 	if (DebugOn != 0)
 		fprintf(stderr, "Starting InitLists.\n");
-
-	float dx = BOXSIZE / 2.f;
-	float dy = BOXSIZE / 2.f;
-	float dz = BOXSIZE / 2.f;
+	
 	glutSetWindow( MainWindow );
+	SphereDL = glGenLists( 1 );
+	glNewList( SphereDL, GL_COMPILE );
+		OsuSphere( 1., 10., 10. );
+	glEndList( );
 
+	EarthDL = glGenLists( 1 );
+	glNewList( EarthDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, EarthTex );	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+			glScalef(0.2f, 0.2f, 0.2f );	// scale of venus sphere, from the table 
+			// int earthOrbit=EarthOrbit.GetValue(nowTime);
+			float angularSpeed = 2.0f * M_PI /1.0; // Angular speed
+ 		    float angle = currentTime * angularSpeed;               // Current angle
+   			float x = planets[0].semiMajorAxis * cos(angle);            // X position
+    		float z = planets[0].semiMajorAxis * sin(angle);  
+			glTranslatef(x,0.f,z);
+			glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+
+
+	
+	JupiterDL= glGenLists( 1 );
+	glNewList( JupiterDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, JupiterTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef(20.f, 20.f,20.f);	// scale of venus sphere, from the table
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+	
+
+	MarsDL = glGenLists( 1 );
+	glNewList( MarsDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, MarsTex );	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef( 0.02f, 0.02f, 0.02f );	// scale of venus sphere, from the table
+		// glTranslatef(0.51,0.0,0.0);
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+
+
+	MercuryDL = glGenLists( 1 );
+	glNewList( MercuryDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, MercuryTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef( 0.02f, 0.02f, 0.02f);	// scale of venus sphere, from the table
+		// glTranslatef(0.13,0.0,0.0);
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+
+
+	NeptuneDL = glGenLists( 1 );
+	glNewList( NeptuneDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, NeptuneTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef( 0.18f, 0.18f,0.18f);			// a dl can call another dl that has been previously created
+		// glTranslatef(10.0,0.0,0.0);
+		glCallList(SphereDL);
+		glPopMatrix( );
+	glEndList( );
+
+
+	
+	SaturnDL = glGenLists( 1 );
+	glNewList( SaturnDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, SaturnTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef(0.45f, 0.45f, 0.45f );	// scale of venus sphere, from the table
+		// glTranslatef(3.19,0.0,0.0);
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+
+	SunDL = glGenLists( 1 );
+	glNewList( SunDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, SunTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef(20.0f, 20.0f, 20.0f );	// scale of venus sphere, from the table
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+	
+
+	UranusDL = glGenLists( 1 );
+	glNewList( UranusDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, UranusTex);	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef(0.2f,0.2f, 0.2f );	// scale of venus sphere, from the table
+		// glTranslatef(6.39f,0.0,0.0);
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
+	
+	VenusDL = glGenLists( 1 );
+	glNewList( VenusDL, GL_COMPILE );
+		glBindTexture( GL_TEXTURE_2D, VenusTex );	// VenusTex must have already been created when this is called
+		glPushMatrix( );
+		glScalef( 0.04f, 0.04f, 0.04f );	// scale of venus sphere, from the table
+		// glTranslatef(0.24,0.0,0.0);
+		glCallList( SphereDL );			// a dl can call another dl that has been previously created
+		glPopMatrix( );
+	glEndList( );
 	// create the object:
 
-	BoxList = glGenLists( 1 );
-	glNewList( BoxList, GL_COMPILE );
-
-		glBegin( GL_QUADS );
-
-			glColor3f( 1., 0., 0. );
-
-				glNormal3f( 1., 0., 0. );
-					glVertex3f(  dx, -dy,  dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f(  dx,  dy,  dz );
-
-				glNormal3f(-1., 0., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f( -dx,  dy, -dz );
-					glVertex3f( -dx, -dy, -dz );
-
-			glColor3f( 0., 1., 0. );
-
-				glNormal3f(0., 1., 0.);
-					glVertex3f( -dx,  dy,  dz );
-					glVertex3f(  dx,  dy,  dz );
-					glVertex3f(  dx,  dy, -dz );
-					glVertex3f( -dx,  dy, -dz );
-
-				glNormal3f(0., -1., 0.);
-					glVertex3f( -dx, -dy,  dz);
-					glVertex3f( -dx, -dy, -dz );
-					glVertex3f(  dx, -dy, -dz );
-					glVertex3f(  dx, -dy,  dz );
-
-			glColor3f(0., 0., 1.);
-
-				glNormal3f(0., 0., 1.);
-					glVertex3f(-dx, -dy, dz);
-					glVertex3f( dx, -dy, dz);
-					glVertex3f( dx,  dy, dz);
-					glVertex3f(-dx,  dy, dz);
-
-				glNormal3f(0., 0., -1.);
-					glVertex3f(-dx, -dy, -dz);
-					glVertex3f(-dx,  dy, -dz);
-					glVertex3f( dx,  dy, -dz);
-					glVertex3f( dx, -dy, -dz);
-
-		glEnd( );
-
-	glEndList( );
 
 
 	// create the axes:
