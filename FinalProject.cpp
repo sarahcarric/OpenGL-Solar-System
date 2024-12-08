@@ -251,14 +251,14 @@ struct Planet {
 };
 
 Planet planets[] = {
-    {1.0f, 1.0f, 0.2f},      // Earth
-	{5.2f, 11.86f, 0.5f},  // Jupiter
-	{1.52f, 1.88f, 0.02f},    // Mars
-	{0.39f, 0.24f, 0.02f}, // Mercury
-	{30.05f, 164.8f, 0.18f}, // Neptune
-    {9.58f, 29.46f, 0.45f}, // Saturn
-    {19.22f, 84.01f, 0.2f}, // Uranus
-	{0.72f, 0.62f, 0.04f},  // Venus
+    {5.17f, 1.0f, 33.32},      // Earth
+	{26.88f, 11.86f, 47.26 },  // Jupiter
+	{7.88f, 1.88f, 35.06f},    // Mars
+	{2.00f, 0.24f, 31.29f}, // Mercury
+	{155.70f, 164.8f, 130.0f}, // Neptune
+    {49.55f, 29.46f, 61.84f}, // Saturn
+    {99.16f, 84.01f, 93.70f}, // Uranus
+	{3.74f, 0.62f, 32.40f},  // Venus
   
 };
 
@@ -307,7 +307,7 @@ MulArray3(float factor, float a, float b, float c )
 // these are here for when you need them -- just uncomment the ones you need:
 
 //#include "setmaterial.cpp"
-//#include "setlight.cpp"
+#include "setlight.cpp"
 #include "osusphere.cpp"
 //#include "osucone.cpp"
 //#include "osutorus.cpp"
@@ -385,10 +385,10 @@ Animate( )
 }
 
 
-void DrawOrbit(float radius, int segments) {
+void DrawOrbit(float radius) {
     glBegin(GL_LINE_LOOP); // Use a line loop to draw the orbit circle
-    for (int i = 0; i <= segments; ++i) {
-        float theta = 2.0f * M_PI * float(i) / float(segments); // Angle step
+    for (int i = 0; i <= 100; ++i) {
+        float theta = 2.0f * M_PI * float(i) /100; // Angle step
         float x = radius * cos(theta); // X coordinate
         float z = radius * sin(theta); // Z coordinate
         glVertex3f(x, 0.0f, z);        // Vertex in the XZ plane
@@ -449,7 +449,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt(100.f,100.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+	gluLookAt(200.f,200.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 
 	// rotate the scene:
 
@@ -488,48 +488,106 @@ Display( )
 
 
 	// since we are using glScalef( ), be sure the normals get unitized:
+	glDisable(GL_LIGHTING);          // Disable lighting for the lines
+	glDisable(GL_TEXTURE_2D);        // Disable texturing
 	glColor3f(1.0f, 1.0f, 1.0f); 
-	DrawOrbit(100.0f * planets[1].semiMajorAxis, 100);
+	DrawOrbit(60* planets[0].semiMajorAxis);
+	DrawOrbit(60 * planets[1].semiMajorAxis);
+	DrawOrbit(60* planets[2].semiMajorAxis);
+	DrawOrbit(60* planets[3].semiMajorAxis);
+	DrawOrbit(60* planets[4].semiMajorAxis);
+	DrawOrbit(60* planets[5].semiMajorAxis);
+	DrawOrbit(60* planets[6].semiMajorAxis);
+	DrawOrbit(60* planets[7].semiMajorAxis);
 	
 	glEnable( GL_NORMALIZE );
 
 	glEnable( GL_TEXTURE_2D );
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-
-	// draw the box object by calling up its display list:
-	
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glCallList(EarthDL);
-
-
 	float nowTime = glutGet( GLUT_ELAPSED_TIME )/1000.0f;
-	glPushMatrix();
-	float angularSpeed1 = nowTime*(2.0f * M_PI)/11.86; // Angular speed
-	float x1 = 100.0f*planets[1].semiMajorAxis * cos(angularSpeed1);            // X position
-    float z1 = 100.0f* planets[1].semiMajorAxis * sin(angularSpeed1);  
-	glTranslatef(x1,0.0f,z1);
-	 
-	glCallList(JupiterDL);
+	
+	// draw the box object by calling up its display list:
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	
+	glCallList(SunDL);
 
+
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed = 100.0f+(nowTime*(2.0f * M_PI)/planets[0].orbitalPeriod); // Angular speed
+		float x = 60*planets[0].semiMajorAxis * cos(angularSpeed);            // X position
+		float z = 60* planets[0].semiMajorAxis * sin(angularSpeed);  
+		glTranslatef(x,0.0f,z);
+		glCallList(EarthDL);
+	glPopMatrix	();
+
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed1 = nowTime*(2.0f * M_PI)/planets[1].orbitalPeriod; // Angular speed
+		float x1 = 60*planets[1].semiMajorAxis * cos(angularSpeed1);            // X position
+		float z1 =  60* planets[1].semiMajorAxis * sin(angularSpeed1);  
+		glTranslatef(x1,0.0f,z1);
+		glCallList(JupiterDL);
+	glPopMatrix();
+
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed2= nowTime* (2.0f * M_PI)/planets[2].orbitalPeriod; // Angular speed
+		float x2 = 60*planets[2].semiMajorAxis * cos(angularSpeed2);            // X position
+		float z2 = 60*planets[2].semiMajorAxis * sin(angularSpeed2);  
+		glTranslatef(x2,0.0f,z2);
+		glCallList(MarsDL);
+	glPopMatrix();
+
+	
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed3 = nowTime* (2.0f * M_PI)/planets[3].orbitalPeriod; // Angular speed
+		float x3 = 60*planets[3].semiMajorAxis * cos(angularSpeed3);            // X position
+		float z3 = 60*planets[3].semiMajorAxis * sin(angularSpeed3);  
+		glTranslatef(x3,0.0f,z3);
+		glCallList(MercuryDL);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed4 = nowTime* (2.0f * M_PI)/planets[4].orbitalPeriod; // Angular speed
+		float x4 = 60*planets[4].semiMajorAxis * cos(angularSpeed4);            // X position
+		float z4 = 60*planets[4].semiMajorAxis * sin(angularSpeed4);  
+		glTranslatef(x4,0.0f,z4);
+		glCallList(NeptuneDL);
+	glPopMatrix();
+
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed5 = nowTime* (2.0f * M_PI)/planets[5].orbitalPeriod; // Angular speed
+		float x5 = 60*planets[5].semiMajorAxis * cos(angularSpeed5);            // X position
+		float z5 = 60*planets[5].semiMajorAxis * sin(angularSpeed5);  
+		glTranslatef(x5,0.0f,z5);
+		glCallList(SaturnDL);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed6 = nowTime* (2.0f * M_PI)/planets[6].orbitalPeriod; // Angular speed
+		float x6 = 60*planets[6].semiMajorAxis * cos(angularSpeed6);            // X position
+		float z6 = 60*planets[6].semiMajorAxis * sin(angularSpeed6);  
+		glTranslatef(x6,0.0f,z6);
+		glCallList(UranusDL);
+	glPopMatrix();
+	
+	glPushMatrix();
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		float angularSpeed7 = nowTime* (2.0f * M_PI)/planets[7].orbitalPeriod; // Angular speed
+		float x7 = 60*planets[7].semiMajorAxis * cos(angularSpeed7);            // X position
+		float z7 = 60*planets[7].semiMajorAxis * sin(angularSpeed7);  
+		glTranslatef(x7,0.0f,z7);
+		glCallList(VenusDL);
 	glPopMatrix();
 
 
-	glCallList(MarsDL);
-	glCallList(MercuryDL);
-	glCallList(NeptuneDL);
-	glCallList(SaturnDL);
-	glCallList(UranusDL);
-	glCallList(VenusDL);
-
-
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glCallList(SunDL);
 	
-	
-	
-	// }
 
 
 #ifdef DEMO_Z_FIGHTING
@@ -875,15 +933,6 @@ InitGraphics( )
 	glutIdleFunc( Animate );
 	
 
-	// {1.0f, 1.0f, 0.2f},      // Earth
-	// {5.2f, 11.86f, 0.5f},  // Jupiter
-	// {1.52f, 1.88f, 0.02f},    // Mars
-	// {0.39f, 0.24f, 0.02f}, // Mercury
-	// {30.05f, 164.8f, 0.18f}, // Neptune
-    // {9.58f, 29.46f, 0.45f}, // Saturn
-    // {19.22f, 84.01f, 0.2f}, // Uranus
-	// {0.72f, 0.62f, 0.04f},  // Venus
-
 	int width, height;
 	char *file = (char *)"earth.bmp";
 	unsigned char *texture = BmpToTexture( file, &width, &height );
@@ -1082,7 +1131,7 @@ InitLists( )
 	glNewList( EarthDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, EarthTex );	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-			glScalef(0.2f, 0.2f, 0.2f );	// scale of venus sphere, from the table 
+			glScalef(18.3f, 18.3f, 18.3f );	// scale of venus sphere, from the table 
 			glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1093,7 +1142,7 @@ InitLists( )
 	glNewList( JupiterDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, JupiterTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef(20.f, 20.f,20.f);	// scale of venus sphere, from the table
+		glScalef(201.1f, 201.1f,201.1f);	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1103,8 +1152,7 @@ InitLists( )
 	glNewList( MarsDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, MarsTex );	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef( 0.02f, 0.02f, 0.02f );	// scale of venus sphere, from the table
-		// glTranslatef(0.51,0.0,0.0);
+		glScalef(9.7f, 9.7f, 9.7f );	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1114,8 +1162,7 @@ InitLists( )
 	glNewList( MercuryDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, MercuryTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef( 0.02f, 0.02f, 0.02f);	// scale of venus sphere, from the table
-		// glTranslatef(0.13,0.0,0.0);
+		glScalef(7.0f, 7.0f, 7.0f);	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1125,8 +1172,7 @@ InitLists( )
 	glNewList( NeptuneDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, NeptuneTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef( 0.18f, 0.18f,0.18f);			// a dl can call another dl that has been previously created
-		// glTranslatef(10.0,0.0,0.0);
+		glScalef(70.8f, 70.8f,70.8f);			// a dl can call another dl that has been previously created
 		glCallList(SphereDL);
 		glPopMatrix( );
 	glEndList( );
@@ -1137,8 +1183,7 @@ InitLists( )
 	glNewList( SaturnDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, SaturnTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef(0.45f, 0.45f, 0.45f );	// scale of venus sphere, from the table
-		// glTranslatef(3.19,0.0,0.0);
+		glScalef(167.5f, 167.5f, 167.5f );	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1147,7 +1192,7 @@ InitLists( )
 	glNewList( SunDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, SunTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef(20.0f, 20.0f, 20.0f );	// scale of venus sphere, from the table
+		glScalef(100.0f, 100.0f, 100.0f );	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1157,8 +1202,7 @@ InitLists( )
 	glNewList( UranusDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, UranusTex);	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef(0.2f,0.2f, 0.2f );	// scale of venus sphere, from the table
-		// glTranslatef(6.39f,0.0,0.0);
+		glScalef(73.8f,73.8f, 73.8f );	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
@@ -1167,8 +1211,7 @@ InitLists( )
 	glNewList( VenusDL, GL_COMPILE );
 		glBindTexture( GL_TEXTURE_2D, VenusTex );	// VenusTex must have already been created when this is called
 		glPushMatrix( );
-		glScalef( 0.04f, 0.04f, 0.04f );	// scale of venus sphere, from the table
-		// glTranslatef(0.24,0.0,0.0);
+		glScalef(17.4f, 17.4f, 17.4f );	// scale of venus sphere, from the table
 		glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
