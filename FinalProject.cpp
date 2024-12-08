@@ -385,6 +385,16 @@ Animate( )
 }
 
 
+void DrawOrbit(float radius, int segments) {
+    glBegin(GL_LINE_LOOP); // Use a line loop to draw the orbit circle
+    for (int i = 0; i <= segments; ++i) {
+        float theta = 2.0f * M_PI * float(i) / float(segments); // Angle step
+        float x = radius * cos(theta); // X coordinate
+        float z = radius * sin(theta); // Z coordinate
+        glVertex3f(x, 0.0f, z);        // Vertex in the XZ plane
+    }
+    glEnd();
+}
 // draw the complete scene:
 
 void
@@ -478,7 +488,9 @@ Display( )
 
 
 	// since we are using glScalef( ), be sure the normals get unitized:
-
+	glColor3f(1.0f, 1.0f, 1.0f); 
+	DrawOrbit(100.0f * planets[1].semiMajorAxis, 100);
+	
 	glEnable( GL_NORMALIZE );
 
 	glEnable( GL_TEXTURE_2D );
@@ -490,13 +502,15 @@ Display( )
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glCallList(EarthDL);
-	
+
+
 	float nowTime = glutGet( GLUT_ELAPSED_TIME )/1000.0f;
 	glPushMatrix();
 	float angularSpeed1 = nowTime*(2.0f * M_PI)/11.86; // Angular speed
-	float x1 = 50.0f*planets[1].semiMajorAxis * cos(angularSpeed1);            // X position
-    float z1 = 50.0f* planets[1].semiMajorAxis * sin(angularSpeed1);  
+	float x1 = 100.0f*planets[1].semiMajorAxis * cos(angularSpeed1);            // X position
+    float z1 = 100.0f* planets[1].semiMajorAxis * sin(angularSpeed1);  
 	glTranslatef(x1,0.0f,z1);
+	 
 	glCallList(JupiterDL);
 
 	glPopMatrix();
@@ -508,7 +522,6 @@ Display( )
 	glCallList(SaturnDL);
 	glCallList(UranusDL);
 	glCallList(VenusDL);
-
 
 
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -1070,12 +1083,6 @@ InitLists( )
 		glBindTexture( GL_TEXTURE_2D, EarthTex );	// VenusTex must have already been created when this is called
 		glPushMatrix( );
 			glScalef(0.2f, 0.2f, 0.2f );	// scale of venus sphere, from the table 
-			// int earthOrbit=EarthOrbit.GetValue(nowTime);
-			float angularSpeed = 2.0f * M_PI /1.0; // Angular speed
- 		    float angle = currentTime * angularSpeed;               // Current angle
-   			float x = planets[0].semiMajorAxis * cos(angle);            // X position
-    		float z = planets[0].semiMajorAxis * sin(angle);  
-			glTranslatef(x,0.f,z);
 			glCallList( SphereDL );			// a dl can call another dl that has been previously created
 		glPopMatrix( );
 	glEndList( );
