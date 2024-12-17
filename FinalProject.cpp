@@ -247,19 +247,18 @@ float			Unit(float [3]);
 struct Planet {
     float semiMajorAxis; // Orbital radius
     float orbitalPeriod; // Orbital period
-    float scale;         // Planet size scale
+
 };
 
 Planet planets[] = {
-    {5.17f, 1.0f, 33.32},      // Earth
-	{26.88f, 11.86f, 47.26 },  // Jupiter
-	{7.88f, 1.88f, 35.06f},    // Mars
-	{2.00f, 0.24f, 31.29f}, // Mercury
-	{155.70f, 164.8f, 130.0f}, // Neptune
-    {49.55f, 29.46f, 61.84f}, // Saturn
-    {99.16f, 84.01f, 93.70f}, // Uranus
-	{3.74f, 0.62f, 32.40f},  // Venus
-  
+    {5.17f, 1.0f},      // Earth
+	{26.88f, 11.86f},  // Jupiter
+	{7.88f, 1.88f},    // Mars
+	{2.00f, 0.24f}, // Mercury
+	{155.70f, 164.8f}, // Neptune
+    {49.55f, 29.46f}, // Saturn
+    {99.16f, 84.01f}, // Uranus
+	{3.74f, 0.62f}, //Venus
 };
 
 // utility to create an array from 3 separate values:
@@ -449,7 +448,7 @@ Display( )
 
 	// set the eye position, look-at position, and up-vector:
 
-	gluLookAt(200.f,200.f, 3.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
+	gluLookAt(200.f,200.f, 100.f,     0.f, 0.f, 0.f,     0.f, 1.f, 0.f );
 
 	// rotate the scene:
 
@@ -461,6 +460,7 @@ Display( )
 	if( Scale < MINSCALE )
 		Scale = MINSCALE;
 	glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
+	glScalef(0.05f, 0.05f, 0.05f);
 
 	// set the fog parameters:
 
@@ -502,16 +502,18 @@ Display( )
 	
 	glEnable( GL_NORMALIZE );
 
-	glEnable( GL_TEXTURE_2D );
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	float nowTime = glutGet( GLUT_ELAPSED_TIME )/1000.0f;
-	
+	glEnable(GL_TEXTURE_2D);
+	float nowTime = glutGet( GLUT_ELAPSED_TIME )/5000.0f;
 	// draw the box object by calling up its display list:
+	SetPointLight(GL_LIGHT0,1000.0f,1000.f,1000.f,1.0,1.0,1.0);
+	float ambient[4] = {5.f, 5.f, 5.f,5.f}; // Soft gray ambient
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	
 	glCallList(SunDL);
 
+	
 
 	glPushMatrix();
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -587,7 +589,9 @@ Display( )
 	glPopMatrix();
 
 
-	
+		
+	glDisable( GL_TEXTURE_2D );
+	glDisable(GL_LIGHTING);
 
 
 #ifdef DEMO_Z_FIGHTING
